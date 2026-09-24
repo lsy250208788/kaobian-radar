@@ -82,6 +82,16 @@ def init_db():
         ("清远市人社局-通知公告", "https://www.gdqy.gov.cn/xxgk/zzjg/zfjg/srlzyhshbz/zhzx/tzgg/"),
         ("清远市教育局", "https://www.gdqy.gov.cn/channel/qysjyj/"),
         ("清远市教育局-通知公告", "https://www.gdqy.gov.cn/xxgk/zzjg/zfjg/qysjyj/tzgga/"),
+        # 清远下辖县市区（均实测可抓取）
+        ("清城区-通知公告", "https://www.qingcheng.gov.cn/xxgk/tzgg2/"),
+        ("清新区-人事信息", "https://www.qingxin.gov.cn/zwgk/rsxx/"),
+        ("英德市-招聘信息", "https://www.yingde.gov.cn/zwgk/rsxx/zpxx/"),
+        ("连州市-人事信息", "http://www.lianzhou.gov.cn/xxgk/rsxx2/index.html"),
+        ("连州市-事业编招聘", "https://www.lianzhou.gov.cn/xxgk/rsxx/sydwzp/"),
+        ("连南县-招聘信息", "https://www.liannan.gov.cn/zwgk/zpxx/"),
+        ("连山县-招聘信息", "https://www.gdls.gov.cn/zwgk/rsxx/zpxx/"),
+        ("佛冈县-通知公告", "https://www.fogang.gov.cn/ywdt/gggs/tzgg/"),
+        ("阳山县-人事招聘", "https://www.yangshan.gov.cn/xxgk/zfxxgkml/zfbmxxgkml/qt/ryzl/"),
     ]
     for name, url in defaults:
         c.execute(
