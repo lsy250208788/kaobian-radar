@@ -204,7 +204,7 @@ def _tunnel_worker(port):
         return
     url = tunnel.wait_url()
     if url:
-        print(f"[公网分享] 公网地址: {url} （可发给同一软件的其他使用者或任何地点的设备）")
+        print(f"[公网分享] 公网地址: {url} （可发给任何地点的设备访问）")
     else:
         print("[公网分享] 未能获取公网地址（网络原因），可在设置页查看状态或重试")
 
