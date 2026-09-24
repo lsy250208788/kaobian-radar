@@ -77,6 +77,11 @@ def init_db():
         ("广东省人力资源和社会保障厅", "https://hrss.gd.gov.cn/"),
         ("广东省教育考试院", "https://eea.gd.gov.cn/"),
         ("广州市人力资源和社会保障局", "https://rsj.gz.gov.cn/"),
+        # 清远地区
+        ("清远市人力资源和社会保障局", "https://www.gdqy.gov.cn/channel/srlzyhshbz/?menuid=null"),
+        ("清远市人社局-通知公告", "https://www.gdqy.gov.cn/xxgk/zzjg/zfjg/srlzyhshbz/zhzx/tzgg/"),
+        ("清远市教育局", "https://www.gdqy.gov.cn/channel/qysjyj/"),
+        ("清远市教育局-通知公告", "https://www.gdqy.gov.cn/xxgk/zzjg/zfjg/qysjyj/tzgga/"),
     ]
     for name, url in defaults:
         c.execute(
