@@ -1,0 +1,283 @@
+[WARNING] Ignore caches that are heterogeneous
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考编雷达 · 招聘考试推广工作台</title>
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#ffffff; --panel2:#f0f2f5; --text:#1a1d21; --muted:#6b7280;
+  --border:#e4e7ec; --primary:#e5533c; --primary-soft:#fdeeea; --accent:#2f6fed;
+  --ok:#1a9e5c; --warn:#d97706; --shadow:0 1px 3px rgba(0,0,0,.08);
+}
+html[data-theme="dark"]{
+  --bg:#16181c; --panel:#1f2227; --panel2:#262a31; --text:#e8eaed; --muted:#9aa1ab;
+  --border:#33383f; --primary:#f0704f; --primary-soft:#3a241e; --accent:#5b8ff0;
+  --ok:#34c07c; --warn:#e8a33d; --shadow:0 1px 4px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","PingFang SC",sans-serif;font-size:14px}
+header{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+header h1{font-size:18px;color:var(--primary)}
+header .sub{color:var(--muted);font-size:12px;flex:1}
+.theme-btn{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--text)}
+nav{display:flex;gap:4px;padding:10px 20px 0;background:var(--panel);border-bottom:1px solid var(--border)}
+nav button{border:none;background:none;padding:10px 18px;font-size:15px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+nav button.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:bold}
+main{max-width:1200px;margin:0 auto;padding:20px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:var(--shadow)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px}
+.btn:hover{opacity:.9}
+.btn.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
+.btn.sm{padding:4px 10px;font-size:12px;border-radius:6px}
+input,select,textarea{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px}
+textarea{width:100%;min-height:90px;resize:vertical;font-family:inherit}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--primary-soft);border-color:var(--primary)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
+th{color:var(--muted);font-weight:normal;font-size:12px}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px}
+.tag.公务员{background:#fdeaea;color:#c0392b}
+.tag.教师{background:#eaf3fd;color:#2f6fed}
+.tag.医疗{background:#eafaf1;color:#1a9e5c}
+.tag.事业单位{background:#fdf3e7;color:#d97706}
+.tag.国企{background:#f3ecfd;color:#7c3aed}
+.tag.其他{background:var(--panel2);color:var(--muted)}
+html[data-theme="dark"] .tag{filter:brightness(.85)}
+.muted{color:var(--muted);font-size:12px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-start;justify-content:center;padding-top:8vh}
+.modal.show{display:flex}
+.modal-box{background:var(--panel);border-radius:14px;padding:22px;width:min(680px,92vw);max-height:80vh;overflow:auto}
+.modal-box h3{margin-bottom:14px;color:var(--primary)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid2 .full{grid-column:1/-1}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:8px;opacity:0;transition:.3s;z-index:200;pointer-events:none}
+.toast.show{opacity:.95}
+.brief-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);align-items:center}
+.brief-item:last-child{border:none}
+.count-badge{background:var(--primary);color:#fff;border-radius:20px;padding:1px 9px;font-size:12px}
+.out-box{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;white-space:pre-wrap;min-height:120px;line-height:1.7}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>📡 考编雷达</h1>
+  <span class="sub">招聘考试推广工作台 · 公告雷达 / 文案工坊 / 发布台账 / 日程提醒 · <b id="ver">v0.1.2</b></span>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 主题</button>
+</header>
+<nav>
+  <button class="active" data-tab="radar" onclick="switchTab('radar')">📡 公告雷达</button>
+  <button data-tab="copy" onclick="switchTab('copy')">✍️ 文案工坊</button>
+  <button data-tab="ledger" onclick="switchTab('ledger')">📋 发布台账</button>
+  <button data-tab="dates" onclick="switchTab('dates')">📅 日程提醒</button>
+  <button data-tab="settings" onclick="switchTab('settings')">⚙️ 设置</button>
+</nav>
+<main id="main"></main>
+<div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+let TAB='radar', ANN=[], RECORDS=[], TPLS=[];
+const $=s=>document.querySelector(s), api=(p,o)=>fetch(p,o?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)}:p).then(r=>r.json());
+function showErr(m){
+  let d=document.getElementById('errbar');
+  if(!d){d=document.createElement('div');d.id='errbar';
+    d.style.cssText='position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:8px 14px;font-size:13px;z-index:999;white-space:pre-wrap';
+    document.body.appendChild(d);}
+  d.textContent='⚠ 页面出错：'+m;
+}
+window.addEventListener('error',e=>showErr(e.message));
+window.addEventListener('unhandledrejection',e=>showErr((e.reason&&e.reason.message)||String(e.reason)));
+if(!window.fetch) showErr('当前浏览器内核缺少 fetch 能力（可能是兼容模式/内核过旧），请在浏览器设置中切换"极速模式"，或使用 Edge/Chrome 打开');
+function safeRender(){safeRender().catch(e=>{showErr('渲染失败: '+(e&&e.message||e));$('#main').innerHTML='<div class="card"><b>页面渲染出错：</b>'+esc(String(e&&e.message||e))+'<br><span class="muted">请截图此红条与该卡片内容反馈</span></div>'})}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function toggleTheme(){const h=document.documentElement;h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';localStorage.setItem('kr-theme',h.dataset.theme)}
+document.documentElement.dataset.theme=localStorage.getItem('kr-theme')||'light';
+
+function switchTab(t){TAB=t;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));safeRender()}
+
+/* ---------- 公告雷达 ---------- */
+async function safeRender(){
+  const m=$('#main');
+  if(TAB==='radar'){
+    await loadAnn();
+    m.innerHTML=`
+    <div class="card"><div class="row">
+      <button class="btn" onclick="doScan()">🔄 立即扫描官网</button>
+      <button class="btn ghost" onclick="showAddModal()">➕ 手动录入公告</button>
+      <input id="kw" placeholder="搜索标题/内容…" style="flex:1;min-width:160px" oninput="loadAnn().then(renderList)">
+      <select id="cat" onchange="loadAnn().then(renderList)">
+        <option value="">全部类别</option><option>公务员</option><option>事业单位</option><option>教师</option><option>医疗</option><option>国企</option><option>其他</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:4px;margin:0"><input type="checkbox" id="onlyUnpub" onchange="loadAnn().then(renderList)"> 只看未发布</label>
+      <span class="muted" id="annCount"></span>
+    </div></div>
+    <div class="card"><table><thead><tr><th style="width:70px">类别</th><th>公告标题</th><th style="width:110px">来源</th><th style="width:100px">抓取时间</th><th style="width:150px">操作</th></tr></thead><tbody id="annBody"></tbody></table></div>`;
+    renderList();
+  } else if(TAB==='copy'){
+    await loadAnn(); TPLS=await api('/api/templates');
+    m.innerHTML=`
+    <div class="card"><div class="row">
+      <select id="copyAnn" style="flex:1;min-width:240px">${ANN.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join('')}</select>
+      <select id="copyTpl">${TPLS.map(t=>`<option>${t}</option>`).join('')}</select>
+      <button class="btn" onclick="gen(false)">📝 模板生成</button>
+      <button class="btn ghost" onclick="gen(true)">🤖 AI 精写</button>
+    </div></div>
+    <div class="card"><label>生成结果（可编辑后直接复制）</label>
+      <input id="outTitle" style="width:100%;margin-bottom:8px" placeholder="标题">
+      <textarea id="outBody" style="min-height:220px" placeholder="点击上方按钮生成文案…"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost" onclick="copyOut()">📋 一键复制</button>
+        <span class="muted">模板生成无需联网；AI 精写需在【设置】配置接口</span>
+      </div>
+    </div>`;
+  } else if(TAB==='ledger'){
+    await loadAnn(); RECORDS=await api('/api/publish_records'); const st=await api('/api/stats');
+    m.innerHTML=`
+    <div class="card"><div class="row">
+      <b>📊 数据概览：</b><span class="muted">公告库 ${st.total_announcements} 条</span>
+      ${st.by_platform.map(p=>`<span class="muted">｜${esc(p.platform)} ${p.cnt} 条（浏览${p.views||0} 赞${p.likes||0}）</span>`).join('')}
+    </div></div>
+    <div class="card"><div class="row" style="margin-bottom:10px">
+      <b>登记发布记录</b>
+      <select id="pubAnn" style="flex:1;min-width:200px">${ANN.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join('')}</select>
+      <select id="pubPlat"><option>小红书</option><option>公众号</option><option>朋友圈</option><option>微信群</option><option>其他</option></select>
+      <button class="btn" onclick="addRecord()">✔ 登记</button>
+    </div>
+    <table><thead><tr><th>公告</th><th style="width:80px">平台</th><th style="width:140px">时间</th><th style="width:120px">数据(浏览/赞)</th><th style="width:60px">操作</th></tr></thead><tbody id="recBody"></tbody></table></div>`;
+    renderRecords();
+  } else if(TAB==='dates'){
+    const dates=await api('/api/key_dates');
+    m.innerHTML=`<div class="card"><b>📅 全部关键日期（未来）</b>
+      ${dates.length?`<table style="margin-top:10px"><thead><tr><th style="width:110px">日期</th><th style="width:100px">节点</th><th>关联公告</th><th style="width:70px">地区</th></tr></thead><tbody>${dates.map(d=>`<tr><td style="color:var(--primary);font-weight:bold">${d.date}</td><td>${esc(d.label)}</td><td>${esc(d.announcement_title||'手动添加')}</td><td><span class="tag 其他">${esc(d.region||'')}</span></td></tr>`).join('')}</tbody></table>`:'<p class="muted" style="margin-top:10px">暂无日期。扫描/录入公告时会自动提取"报名、笔试、面试"等日期；也可在公告内容里补写后重新录入。</p>'}
+    </div>`;
+  } else if(TAB==='settings'){
+    const s=await api('/api/settings'), src=await api('/api/sources');
+    m.innerHTML=`
+    <div class="card"><b>🤖 AI 接口（OpenAI 兼容格式，选填）</b>
+      <div class="grid2" style="margin-top:10px">
+        <div class="full"><label>接口地址 Base URL（如 https://api.xxx.com/v1）</label><input id="sUrl" style="width:100%" value="${esc(s.ai_base_url||'')}"></div>
+        <div><label>API Key</label><input id="sKey" type="password" style="width:100%" value="${esc(s.ai_api_key||'')}" placeholder="${s.ai_api_key?'已保存，留空则不修改':''}"></div>
+        <div><label>模型名</label><input id="sModel" style="width:100%" value="${esc(s.ai_model||'')}" placeholder="如 gpt-4o-mini / deepseek-chat"></div>
+        <div><label>提醒提前天数</label><input id="sDays" type="number" style="width:100%" value="${s.reminder_days||7}"></div>
+      </div>
+      <button class="btn" style="margin-top:12px" onclick="saveSettings()">💾 保存设置</button>
+    </div>
+    <div class="card"><b>🌐 公告监控源</b>
+      <table style="margin-top:10px"><tbody>${src.map(x=>`<tr><td>${esc(x.name)}</td><td class="muted">${esc(x.url)}</td><td style="width:80px"><button class="btn sm ghost" onclick="toggleSource(${x.id},${x.enabled?0:1})">${x.enabled?'✅启用中':'⏸已停用'}</button></td></tr>`).join('')}</tbody></table>
+      <div class="row" style="margin-top:10px"><input id="srcName" placeholder="源名称"><input id="srcUrl" placeholder="https://…" style="flex:1"><button class="btn" onclick="addSource()">添加源</button></div>
+    </div>`;
+  }
+}
+
+/* ---------- 数据操作 ---------- */
+async function loadAnn(){
+  const kw=encodeURIComponent($('#kw')?$('#kw').value:'');
+  const cat=encodeURIComponent($('#cat')?$('#cat').value:'');
+  const un=$('#onlyUnpub')&&$('#onlyUnpub').checked?1:0;
+  ANN=await api(`/api/announcements?keyword=${kw}&category=${cat}&only_unpublished=${un}`);
+}
+function renderList(){
+  const b=$('#annBody'); if(!b)return;
+  $('#annCount').textContent=`共 ${ANN.length} 条`;
+  if(!ANN.length){
+    b.innerHTML=`<tr><td colspan="5" style="padding:24px;text-align:center">
+      <p style="font-size:15px;margin-bottom:8px">📭 公告库还是空的</p>
+      <p class="muted">点击上方 <b>🔄 立即扫描官网</b> 自动抓取，或 <b>➕ 手动录入公告</b><br>
+      扫描结果取决于目标网站当时的网络状况，失败可多试几次；带【示例】标记的是演示数据，可删除</p>
+    </td></tr>`;
+    return;
+  }
+  b.innerHTML=ANN.map(a=>`<tr>
+    <td><span class="tag ${esc(a.category)}">${esc(a.category)}</span></td>
+    <td>${a.url&&!a.url.startsWith('manual')?`<a href="${esc(a.url)}" target="_blank" style="color:var(--accent)">${esc(a.title)}</a>`:esc(a.title)}
+      ${a.pub_count?`<span class="count-badge" style="margin-left:6px">已发${a.pub_count}</span>`:''}</td>
+    <td class="muted">${esc(a.source)}</td>
+    <td class="muted">${a.created_at}</td>
+    <td><button class="btn sm ghost" onclick="goCopy(${a.id})">写文案</button>
+        <button class="btn sm ghost" onclick="delAnn(${a.id})">删除</button></td>
+  </tr>`).join('');
+}
+function goCopy(id){switchTab('copy');setTimeout(()=>{$('#copyAnn').value=id;gen(false)},300)}
+async function delAnn(id){if(!confirm('删除该公告及其记录？'))return;await api('/api/announcements/'+id,{},{method:'DELETE'});safeRender()}
+async function doScan(){
+  toast('正在扫描官网，请稍候…');
+  const r=await api('/api/scan',{});
+  const errs=(r.sources||[]).filter(s=>s.error).length;
+  toast(`扫描完成：新增 ${r.total_new} 条公告${errs?`（${errs} 个源访问失败，多为官网反爬或网络原因）`:''}`);
+  safeRender();
+}
+function showAddModal(){
+  $('#modalBox').innerHTML=`<h3>➕ 手动录入公告</h3>
+  <div class="grid2">
+    <div class="full"><label>公告标题 *</label><input id="mA" style="width:100%"></div>
+    <div class="full"><label>原文链接（可选）</label><input id="mB" style="width:100%"></div>
+    <div><label>地区</label><input id="mR" value="广东" style="width:100%"></div>
+    <div><label>类别</label><select id="mC" style="width:100%"><option>事业单位</option><option>公务员</option><option>教师</option><option>医疗</option><option>国企</option><option>其他</option></select></div>
+    <div class="full"><label>公告正文（粘贴后自动提取报名/笔试日期）</label><textarea id="mD"></textarea></div>
+  </div>
+  <div class="row" style="margin-top:14px"><button class="btn" onclick="saveManual()">保存</button><button class="btn ghost" onclick="closeModal()">取消</button></div>`;
+  $('#modal').classList.add('show');
+}
+async function saveManual(){
+  const d={title:$('#mA').value,url:$('#mB').value,region:$('#mR').value,category:$('#mC').value,content:$('#mD').value};
+  if(!d.title)return toast('标题必填');
+  await api('/api/announcements',d);closeModal();toast('已保存，日期已自动提取');switchTab('radar');
+}
+async function gen(useAI){
+  const annId=$('#copyAnn').value; if(!annId)return toast('请先在公告雷达里添加公告');
+  toast(useAI?'AI 正在生成，约需十几秒…':'正在生成…');
+  const r=await api(useAI?'/api/generate_ai':'/api/generate',{announcement_id:+annId,platform:$('#copyTpl').value});
+  if(r.error)return toast(r.error);
+  $('#outTitle').value=r.title||'';$('#outBody').value=r.body||'';toast('生成完成 ✔');
+}
+function copyOut(){
+  const t=($('#outTitle').value?$('#outTitle').value+'\n\n':'')+$('#outBody').value;
+  navigator.clipboard.writeText(t).then(()=>toast('已复制到剪贴板'));
+}
+async function addRecord(){
+  const d={announcement_id:+$('#pubAnn').value,platform:$('#pubPlat').value};
+  await api('/api/publish_records',d);toast('已登记');safeRender();
+}
+function renderRecords(){
+  const b=$('#recBody');if(!b)return;
+  b.innerHTML=RECORDS.length?RECORDS.map(p=>`<tr>
+    <td>${esc(p.announcement_title||'')}</td><td>${esc(p.platform)}</td>
+    <td class="muted">${p.published_at}</td><td class="muted">${p.views||0} / ${p.likes||0}</td>
+    <td><button class="btn sm ghost" onclick="delRecord(${p.id})">删</button></td></tr>`).join('')
+    :'<tr><td colspan="5" class="muted">暂无发布记录</td></tr>';
+}
+async function delRecord(id){await api('/api/publish_records/'+id,{},{method:'DELETE'});safeRender()}
+async function saveSettings(){
+  const d={ai_base_url:$('#sUrl').value,ai_api_key:$('#sKey').value,ai_model:$('#sModel').value,reminder_days:+$('#sDays').value||7};
+  await api('/api/settings',d);toast('设置已保存 ✔');safeRender();
+}
+async function addSource(){
+  const d={name:$('#srcName').value,url:$('#srcUrl').value};
+  const r=await api('/api/sources',d);
+  r.error?toast(r.error):(toast('源已添加'),safeRender());
+}
+async function toggleSource(id,en){await api(`/api/sources/${id}/toggle`,{enabled:!!en});safeRender()}
+function closeModal(){$('#modal').classList.remove('show')}
+
+/* ---------- 启动弹窗提醒 ---------- */
+async function showBrief(){
+  const b=await api('/api/today_brief');
+  if(!b.upcoming.length&&!b.unpublished.length)return;
+  $('#modalBox').innerHTML=`<h3>🔔 今日待办提醒</h3>
+  ${b.upcoming.length?`<p style="margin-bottom:8px"><b>未来 ${b.reminder_days} 天关键节点：</b></p>`+
+    b.upcoming.slice(0,12).map(d=>`<div class="brief-item"><span class="tag 其他" style="background:var(--primary-soft);color:var(--primary)">${d.date}</span><b>${esc(d.label)}</b><span>${esc((d.announcement_title||'').slice(0,40))}</span></div>`).join(''):''}
+  ${b.unpublished.length?`<p style="margin:12px 0 8px"><b>📝 还有 ${b.unpublished.length} 条公告未发布推广：</b></p>`+
+    b.unpublished.slice(0,6).map(a=>`<div class="brief-item"><span class="tag ${esc(a.category)}">${esc(a.category)}</span><span>${esc(a.title.slice(0,42))}</span></div>`).join(''):''}
+  <div class="row" style="margin-top:16px"><button class="btn" onclick="closeModal();switchTab('dates')">查看日程</button><button class="btn ghost" onclick="closeModal();switchTab('radar')">去发公告</button><button class="btn ghost" onclick="closeModal()">知道了</button></div>`;
+  $('#modal').classList.add('show');
+}
+
+safeRender();showBrief();
+</script>
+
+
+<div id="errbar" style="position: fixed; top: 0px; left: 0px; right: 0px; background: rgb(192, 57, 43); color: rgb(255, 255, 255); padding: 8px 14px; font-size: 13px; z-index: 999; white-space: pre-wrap;">⚠ 页面出错：Failed to execute 'fetch' on 'Window': The provided value is not of type 'RequestInit'.</div></body></html>

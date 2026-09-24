@@ -80,16 +80,27 @@ label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
 
 <script>
 let TAB='radar', ANN=[], RECORDS=[], TPLS=[];
-const $=s=>document.querySelector(s), api=(p,o)=>fetch(p,o?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)}:p).then(r=>r.json());
+const $=s=>document.querySelector(s), api=(p,o)=>fetch(p, o?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)}:undefined).then(r=>r.json());
+function showErr(m){
+  let d=document.getElementById('errbar');
+  if(!d){d=document.createElement('div');d.id='errbar';
+    d.style.cssText='position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:8px 14px;font-size:13px;z-index:999;white-space:pre-wrap';
+    document.body.appendChild(d);}
+  d.textContent='⚠ 页面出错：'+m;
+}
+window.addEventListener('error',e=>showErr(e.message));
+window.addEventListener('unhandledrejection',e=>showErr((e.reason&&e.reason.message)||String(e.reason)));
+if(!window.fetch) showErr('当前浏览器内核缺少 fetch 能力（可能是兼容模式/内核过旧），请在浏览器设置中切换"极速模式"，或使用 Edge/Chrome 打开');
+function safeRender(){safeRender().catch(e=>{showErr('渲染失败: '+(e&&e.message||e));$('#main').innerHTML='<div class="card"><b>页面渲染出错：</b>'+esc(String(e&&e.message||e))+'<br><span class="muted">请截图此红条与该卡片内容反馈</span></div>'})}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function toggleTheme(){const h=document.documentElement;h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';localStorage.setItem('kr-theme',h.dataset.theme)}
 document.documentElement.dataset.theme=localStorage.getItem('kr-theme')||'light';
 
-function switchTab(t){TAB=t;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));render()}
+function switchTab(t){TAB=t;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));safeRender()}
 
 /* ---------- 公告雷达 ---------- */
-async function render(){
+async function safeRender(){
   const m=$('#main');
   if(TAB==='radar'){
     await loadAnn();
@@ -191,13 +202,13 @@ function renderList(){
   </tr>`).join('');
 }
 function goCopy(id){switchTab('copy');setTimeout(()=>{$('#copyAnn').value=id;gen(false)},300)}
-async function delAnn(id){if(!confirm('删除该公告及其记录？'))return;await api('/api/announcements/'+id,{},{method:'DELETE'});render()}
+async function delAnn(id){if(!confirm('删除该公告及其记录？'))return;await api('/api/announcements/'+id,{},{method:'DELETE'});safeRender()}
 async function doScan(){
   toast('正在扫描官网，请稍候…');
   const r=await api('/api/scan',{});
   const errs=(r.sources||[]).filter(s=>s.error).length;
   toast(`扫描完成：新增 ${r.total_new} 条公告${errs?`（${errs} 个源访问失败，多为官网反爬或网络原因）`:''}`);
-  render();
+  safeRender();
 }
 function showAddModal(){
   $('#modalBox').innerHTML=`<h3>➕ 手动录入公告</h3>
@@ -229,7 +240,7 @@ function copyOut(){
 }
 async function addRecord(){
   const d={announcement_id:+$('#pubAnn').value,platform:$('#pubPlat').value};
-  await api('/api/publish_records',d);toast('已登记');render();
+  await api('/api/publish_records',d);toast('已登记');safeRender();
 }
 function renderRecords(){
   const b=$('#recBody');if(!b)return;
@@ -239,17 +250,17 @@ function renderRecords(){
     <td><button class="btn sm ghost" onclick="delRecord(${p.id})">删</button></td></tr>`).join('')
     :'<tr><td colspan="5" class="muted">暂无发布记录</td></tr>';
 }
-async function delRecord(id){await api('/api/publish_records/'+id,{},{method:'DELETE'});render()}
+async function delRecord(id){await api('/api/publish_records/'+id,{},{method:'DELETE'});safeRender()}
 async function saveSettings(){
   const d={ai_base_url:$('#sUrl').value,ai_api_key:$('#sKey').value,ai_model:$('#sModel').value,reminder_days:+$('#sDays').value||7};
-  await api('/api/settings',d);toast('设置已保存 ✔');render();
+  await api('/api/settings',d);toast('设置已保存 ✔');safeRender();
 }
 async function addSource(){
   const d={name:$('#srcName').value,url:$('#srcUrl').value};
   const r=await api('/api/sources',d);
-  r.error?toast(r.error):(toast('源已添加'),render());
+  r.error?toast(r.error):(toast('源已添加'),safeRender());
 }
-async function toggleSource(id,en){await api(`/api/sources/${id}/toggle`,{enabled:!!en});render()}
+async function toggleSource(id,en){await api(`/api/sources/${id}/toggle`,{enabled:!!en});safeRender()}
 function closeModal(){$('#modal').classList.remove('show')}
 
 /* ---------- 启动弹窗提醒 ---------- */
@@ -265,7 +276,7 @@ async function showBrief(){
   $('#modal').classList.add('show');
 }
 
-render();showBrief();
+safeRender();showBrief();
 </script>
 </body>
 </html>

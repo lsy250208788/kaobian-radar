@@ -1,0 +1,13 @@
+﻿agent-browser.cmd : 鉁?Chrome not found. Checked:
+所在位置 行:445 字符: 171
++ ... de\versions\22.22.2-3\agent-browser.cmd"; & $ab snapshot 2>&1 | Out-F ...
++                                               ~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (鉁?Chrome not found. Checked::Stri 
+   ng) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - agent-browser cache: C:\Users\shuig\.agent-browser\browsers
+  - System Chrome installations
+  - Puppeteer browser cache
+  - Playwright browser cache
+Run `agent-browser install` to download Chrome, or use --executable-path.
