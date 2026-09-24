@@ -15,6 +15,9 @@ import copywriter
 import db
 import fetcher
 import parser as date_parser
+import tunnel
+
+URL_PORT = 8765  # main() 启动时更新为实际端口
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), "static"))
 
@@ -193,6 +196,37 @@ def api_today_brief():
     return jsonify({"reminder_days": days, "upcoming": dates, "unpublished": unpublished})
 
 
+# ---------- 公网分享（内网穿透） ----------
+def _tunnel_worker(port):
+    ok, err = tunnel.start(port)
+    if not ok:
+        print(f"[公网分享] {err}")
+        return
+    url = tunnel.wait_url()
+    if url:
+        print(f"[公网分享] 公网地址: {url} （可发给同一软件的其他使用者或任何地点的设备）")
+    else:
+        print("[公网分享] 未能获取公网地址（网络原因），可在设置页查看状态或重试")
+
+
+@app.route("/api/tunnel")
+def api_tunnel():
+    return jsonify(tunnel.status())
+
+
+@app.route("/api/tunnel", methods=["POST"])
+def api_tunnel_toggle():
+    d = request.json or {}
+    enabled = bool(d.get("enabled"))
+    if enabled:
+        threading.Thread(target=_tunnel_worker, args=(URL_PORT,), daemon=True).start()
+        db.save_settings({"tunnel_enabled": True})
+        return jsonify({"ok": True, "starting": True})
+    tunnel.stop()
+    db.save_settings({"tunnel_enabled": False})
+    return jsonify({"ok": True})
+
+
 # ---------- 设置 ----------
 @app.route("/api/settings")
 def api_get_settings():
@@ -253,19 +287,24 @@ def auto_scan():
 
 
 def main():
+    global URL_PORT
     db.init_db()
     seeded = db.seed_samples_if_empty()
     if seeded:
         print(f"[初始化] 已预置 {seeded} 条示例公告（可删除）")
     port = find_free_port()
+    URL_PORT = port
     lan_ip = get_lan_ip()
     threading.Thread(target=auto_scan, daemon=True).start()
     threading.Thread(target=open_browser, args=(port,), daemon=True).start()
+    if db.load_settings().get("tunnel_enabled"):
+        threading.Thread(target=_tunnel_worker, args=(port,), daemon=True).start()
     print("=" * 50)
     print("  考编雷达 kaobian-radar 已启动")
     print(f"  本机访问:   http://127.0.0.1:{port}")
     print(f"  局域网访问: http://{lan_ip}:{port}")
     print("  (同一 WiFi 下的手机/其他电脑可用上面的局域网地址)")
+    print("  公网分享:  在【设置】页开启，获得任意地点可访问的公网地址")
     print("  关闭此窗口即可退出软件")
     print("=" * 50)
     app.run(host="0.0.0.0", port=port, debug=False)
