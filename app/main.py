@@ -211,6 +211,19 @@ def api_set_settings():
     return jsonify(cur)
 
 
+def get_lan_ip():
+    """获取本机局域网 IP（用于提示其他设备访问地址）"""
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except Exception:
+        return "127.0.0.1"
+    finally:
+        s.close()
+
+
 def find_free_port(start=8765):
     """从 start 开始找第一个可用端口，避免端口占用导致启动失败"""
     import socket
@@ -245,14 +258,17 @@ def main():
     if seeded:
         print(f"[初始化] 已预置 {seeded} 条示例公告（可删除）")
     port = find_free_port()
+    lan_ip = get_lan_ip()
     threading.Thread(target=auto_scan, daemon=True).start()
     threading.Thread(target=open_browser, args=(port,), daemon=True).start()
     print("=" * 50)
     print("  考编雷达 kaobian-radar 已启动")
-    print(f"  请在浏览器访问 http://127.0.0.1:{port}")
+    print(f"  本机访问:   http://127.0.0.1:{port}")
+    print(f"  局域网访问: http://{lan_ip}:{port}")
+    print("  (同一 WiFi 下的手机/其他电脑可用上面的局域网地址)")
     print("  关闭此窗口即可退出软件")
     print("=" * 50)
-    app.run(host="127.0.0.1", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
 
 
 if __name__ == "__main__":
