@@ -27,13 +27,13 @@ def _find_binary():
     return cand if os.path.exists(cand) else None
 
 
-def status():
-    return {"running": _proc is not None and _proc.poll() is None, "url": _url}
-
-
 def _log_path():
     binary = _find_binary()
     return os.path.join(os.path.dirname(binary) or ".", "tunnel.log")
+
+
+def status():
+    return {"running": _proc is not None and _proc.poll() is None, "url": _url}
 
 
 def start(port):
