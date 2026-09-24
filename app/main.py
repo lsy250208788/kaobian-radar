@@ -21,7 +21,17 @@ app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), "sta
 # ---------- 页面 ----------
 @app.route("/")
 def index():
-    return send_from_directory(app.static_folder, "index.html")
+    resp = send_from_directory(app.static_folder, "index.html")
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    return resp
+
+
+@app.after_request
+def no_cache_html(resp):
+    """HTML 页面禁用浏览器缓存，避免更新后仍显示旧版"""
+    if resp.mimetype == "text/html":
+        resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    return resp
 
 
 # ---------- 公告 ----------
