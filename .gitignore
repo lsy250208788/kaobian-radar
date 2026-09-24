@@ -12,3 +12,7 @@ err.txt
 exe_out.txt
 exe_err.txt
 pyi_build.log
+tools/cloudflared.exe
+tools/tunnel.log
+tunnel.log
+*.log
