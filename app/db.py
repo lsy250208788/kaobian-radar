@@ -70,24 +70,70 @@ def init_db():
             enabled INTEGER DEFAULT 1
         )"""
     )
-    # 默认监控源：以广东为主，兼顾全国性渠道
+    # 默认监控源：以广东为主，兼顾全国性渠道（均为实测可访问的站点）
     defaults = [
-        ("广东省人力资源和社会保障厅-事业单位", "https://hrss.gd.gov.cn/gdsydw/"),
         ("广东人事考试网", "https://rsks.gd.gov.cn/"),
         ("广东省教育厅", "https://edu.gd.gov.cn/"),
-        ("广东组织工作网（公务员选调）", "https://www.gdzz.cn/"),
-        ("广东省人力资源和社会保障厅-通知公告", "https://hrss.gd.gov.cn/zwgk/tzgg/"),
+        ("广东省人力资源和社会保障厅", "https://hrss.gd.gov.cn/"),
+        ("广东省教育考试院", "https://eea.gd.gov.cn/"),
+        ("广州市人力资源和社会保障局", "https://rsj.gz.gov.cn/"),
     ]
     for name, url in defaults:
         c.execute(
             "INSERT OR IGNORE INTO sources(name,url) VALUES(?,?)", (name, url)
         )
+    # 迁移：清理已失效（404/403）的旧源
+    for broken in ("https://hrss.gd.gov.cn/gdsydw/",
+                   "https://hrss.gd.gov.cn/zwgk/tzgg/",
+                   "https://www.gdzz.cn/"):
+        c.execute("DELETE FROM sources WHERE url=?", (broken,))
     conn.commit()
     conn.close()
 
 
 def now_str():
     return time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+# ---------- 示例数据（首次启动空库时预置，可删除） ----------
+SAMPLES = [
+    {"title": "【示例】2026年广东省梅州市梅县区公开招聘教师60名公告",
+     "url": "sample://jiaoshi-meixian",
+     "region": "广东", "category": "教师",
+     "content": "报名时间：2026年10月10日至2026年10月16日。笔试时间：2026年11月2日。面试时间：2026年11月20日。招聘岗位为梅县区公办中小学教师，要求相应教师资格证。"},
+    {"title": "【示例】2026年下半年广州市事业单位公开招聘工作人员公告",
+     "url": "sample://shiyewei-guangzhou",
+     "region": "广东", "category": "事业单位",
+     "content": "报名时间：2026年10月8日至2026年10月12日。笔试时间：2026年10月26日。本次公开招聘事业单位工作人员215名。"},
+    {"title": "【示例】2026年广东省公务员考试录用公告（节选示例）",
+     "url": "sample://gongwuyuan-gd",
+     "region": "广东", "category": "公务员",
+     "content": "报名时间：2026年11月5日至2026年11月11日。笔试时间：2026年12月14日。全省各级机关计划招录公务员15801名。"},
+    {"title": "【示例】佛山市三水区人民医院公开招聘护理人员公告",
+     "url": "sample://yiliao-foshan",
+     "region": "广东", "category": "医疗",
+     "content": "报名时间：2026年9月28日至2026年10月9日。面试时间：2026年10月18日。招聘护士、药师等岗位共35名。"},
+    {"title": "【示例】中国南方电网广东公司2026年校园招聘公告",
+     "url": "sample://guoqi-nfdw",
+     "region": "广东", "category": "国企",
+     "content": "报名截止：2026年10月20日。笔试时间：2026年11月8日。面向2026届高校毕业生招聘电气类、计算机类等岗位。"},
+]
+
+
+def seed_samples_if_empty():
+    conn = get_conn()
+    count = conn.execute("SELECT COUNT(*) AS c FROM announcements").fetchone()["c"]
+    conn.close()
+    if count > 0:
+        return 0
+    import parser as date_parser
+    for s in SAMPLES:
+        aid = add_announcement_manual(s["title"], s["url"], s["content"],
+                                      s["region"], s["category"])
+        if aid:
+            for label, d in date_parser.extract_dates(s["content"]):
+                add_key_date(aid, label, d)
+    return len(SAMPLES)
 
 
 # ---------- 公告 ----------

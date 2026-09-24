@@ -206,9 +206,23 @@ def open_browser(port):
     webbrowser.open(f"http://127.0.0.1:{port}")
 
 
+def auto_scan():
+    """启动时后台静默扫描一次官网"""
+    time.sleep(2)
+    try:
+        result = fetcher.scan_all()
+        print(f"[自动扫描] 新增 {result['total_new']} 条公告")
+    except Exception as e:
+        print(f"[自动扫描] 失败：{type(e).__name__}: {e}")
+
+
 def main():
     db.init_db()
+    seeded = db.seed_samples_if_empty()
+    if seeded:
+        print(f"[初始化] 已预置 {seeded} 条示例公告（可删除）")
     port = find_free_port()
+    threading.Thread(target=auto_scan, daemon=True).start()
     threading.Thread(target=open_browser, args=(port,), daemon=True).start()
     print("=" * 50)
     print("  考编雷达 kaobian-radar 已启动")

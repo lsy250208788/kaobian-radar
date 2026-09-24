@@ -172,6 +172,14 @@ async function loadAnn(){
 function renderList(){
   const b=$('#annBody'); if(!b)return;
   $('#annCount').textContent=`共 ${ANN.length} 条`;
+  if(!ANN.length){
+    b.innerHTML=`<tr><td colspan="5" style="padding:24px;text-align:center">
+      <p style="font-size:15px;margin-bottom:8px">📭 公告库还是空的</p>
+      <p class="muted">点击上方 <b>🔄 立即扫描官网</b> 自动抓取，或 <b>➕ 手动录入公告</b><br>
+      扫描结果取决于目标网站当时的网络状况，失败可多试几次；带【示例】标记的是演示数据，可删除</p>
+    </td></tr>`;
+    return;
+  }
   b.innerHTML=ANN.map(a=>`<tr>
     <td><span class="tag ${esc(a.category)}">${esc(a.category)}</span></td>
     <td>${a.url&&!a.url.startsWith('manual')?`<a href="${esc(a.url)}" target="_blank" style="color:var(--accent)">${esc(a.title)}</a>`:esc(a.title)}
