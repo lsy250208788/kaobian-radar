@@ -2,6 +2,7 @@
 """考编雷达 kaobian-radar —— 招聘考试推广工作台
 本地运行：启动后自动打开浏览器 http://127.0.0.1:8765
 """
+import json
 import os
 import sys
 import threading
@@ -21,7 +22,19 @@ app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), "sta
 # ---------- 页面 ----------
 @app.route("/")
 def index():
-    resp = send_from_directory(app.static_folder, "index.html")
+    """页面路由：把公告数据直接注入 HTML（服务器渲染兜底），
+    即使浏览器 fetch 请求失败，打开页面也一定能看到公告列表。"""
+    path = os.path.join(app.static_folder, "index.html")
+    with open(path, encoding="utf-8") as f:
+        html = f.read()
+    try:
+        payload = json.dumps({"ann": db.list_announcements()}, ensure_ascii=False)
+        payload = payload.replace("</", "<\\/")  # 防止内容中含 </script> 提前闭合
+        inject = f"<script>window.__SSR__={payload};</script>\n"
+        html = html.replace("<script>", inject + "<script>", 1)
+    except Exception as e:
+        print(f"[SSR 注入失败] {type(e).__name__}: {e}")
+    resp = app.response_class(html, mimetype="text/html")
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     return resp
 
@@ -213,7 +226,7 @@ def find_free_port(start=8765):
 
 def open_browser(port):
     time.sleep(1.2)
-    webbrowser.open(f"http://127.0.0.1:{port}")
+    webbrowser.open(f"http://127.0.0.1:{port}/?t={int(time.time())}")
 
 
 def auto_scan():
