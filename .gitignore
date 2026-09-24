@@ -9,3 +9,6 @@ test_log.txt
 test_api.py
 out.txt
 err.txt
+exe_out.txt
+exe_err.txt
+pyi_build.log
